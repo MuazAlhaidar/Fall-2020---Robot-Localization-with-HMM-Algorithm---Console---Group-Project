@@ -3,7 +3,7 @@ namespace Node {
 
 void printGrid(node nodeGrid[][WIDTH]) {
 
-    std::cout << "+++++++++++++++++++++++++++++++++++++\n";
+    std::cout << "++++++++++++++++++++++++++++++++++++++\n";
 
     for (short row = 0; row < HEIGHT; row++) {
         for (short col = 0; col < WIDTH; col++) {
@@ -13,7 +13,7 @@ void printGrid(node nodeGrid[][WIDTH]) {
         std::cout << "\n";
     }
 
-    std::cout << "+++++++++++++++++++++++++++++++++++++\n";
+    std::cout << "++++++++++++++++++++++++++++++++++++++\n";
 }
 
 void setGrid(node nodeGrid[][WIDTH], float freeNodes) {
