@@ -1,6 +1,8 @@
 #include "Node.hpp"
 namespace Node {
 
+
+
 void printGrid(node nodeGrid[][WIDTH]) {
 
     std::cout << "++++++++++++++++++++++++++++++++++++++\n";
@@ -15,6 +17,7 @@ void printGrid(node nodeGrid[][WIDTH]) {
 
     std::cout << "++++++++++++++++++++++++++++++++++++++\n";
 }
+
 
 void setGrid(node nodeGrid[][WIDTH], float freeNodes) {
 

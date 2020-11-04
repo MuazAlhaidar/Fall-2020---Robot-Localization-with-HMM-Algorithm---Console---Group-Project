@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace Node {
 
@@ -20,9 +21,11 @@ struct node {
     std::string label;
 };
 
+
 void printGrid(node nodeGrid[][WIDTH]);
 void setGrid(node nodeGrid[][WIDTH], float freeNodes);
 void setNode(node nodeGrid[][WIDTH], int row, int col, float nodeProb, bool isBlock, std::string label = "");
 } // namespace Node
+
 
 #endif
