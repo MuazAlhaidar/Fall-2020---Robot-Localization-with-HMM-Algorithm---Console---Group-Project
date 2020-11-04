@@ -21,13 +21,13 @@ void printGrid(node nodeGrid[][WIDTH]) {
 
 void setGrid(node nodeGrid[][WIDTH], float freeNodes) {
 
-    float defaultNodeProb = 100 / freeNodes;
+     float defaultNodeProb = 1.0/24.0;
 
     std::cout << "default prob: " << defaultNodeProb << std::endl;
 
     for (short row = 0; row < HEIGHT; row++) {
         for (short col = 0; col < WIDTH; col++) {
-            setNode(nodeGrid, row, col, defaultNodeProb, false);
+            setNode(nodeGrid, row, col, defaultNodeProb/100, false);
         }
     }
 
