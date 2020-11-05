@@ -162,15 +162,8 @@ function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float
 		tmp_pos = i[1]
 		prob = i[2]
 		drift = i[4]
-		# println(cep(grid,tmp_pos, evidence), "\t", last_grid[pos[1]][pos[2]], "\t", Bgrid[tmp_pos[1]][tmp_pos[2]], "\t", drift)
-		# println(cep(grid,pos, evidence), "\t", last_grid[pos[1]][pos[2]], "\t", Bgrid[pos[1]][pos[2]], "\t", drift)
-
-		# println(i[1], "\t", cep(grid, i[1], evidence ), "\t", last_grid[i[1][1]][i[1][2]], Bgrid[i[1][1]][i[1][2]], i[2])
-		# println(cep(grid, tmp_pos, evidence),"\t*", Bgrid[tmp_pos[1]][tmp_pos[2]],"\t*", i[4])
+		println(cep(grid, tmp_pos, evidence),"	", Bgrid[tmp_pos[1]][tmp_pos[2]],"	", i[4], "\t", last_grid[pos[1]][pos[2]])
 		y=cep(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* i[4]
-		# println(y, "=\t", cep(grid, tmp_pos, evidence), "*\t","*\t", Bgrid[tmp_pos[1]][tmp_pos[2]], "*\t", i[4], "------------", i[1])
-		# println(cep(grid,tmp_pos, evidence),'\t', Bgrid[tmp_pos[1]][tmp_pos[2]],'\t', i)
-		# y=cep(grid,tmp_pos, evidence) * last_grid[tmp_pos[1]][tmp_pos[2]] *  Bgrid[tmp_pos[1]][tmp_pos[2]] 
 		x+=y
 	end
 	(x, x *last_grid[pos[1]][pos[2]])
@@ -215,15 +208,19 @@ Bgrid = [
 # println(tmp2[6][1])
 # smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
 # smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
-(a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-print_grid(a)
-println()
-print_grid(b)
-(a,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-println()
-print_grid(a)
-println()
-print_grid(b)
+# (a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+# print_grid(a)
+
+for row in Iterators.reverse(1:HEIGHT)
+	for col in Iterators.reverse(1:WIDTH)
+	end
+end
+
+# println()
+# (a,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+# print_grid(a)
+
+
 
 #
 
