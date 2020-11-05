@@ -123,6 +123,28 @@ function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, d
 			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT]))
 		else
 			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], pos,Drift[RIGHT] ))
+=======
+		println(left, right, straight, behind)
+
+
+		if( notblocked(grid, behind)) # Prob of square behind current ot move to current
+			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT], behind))
+		end
+		if( !notblocked(grid, straight)) # Bounce
+			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT], straight))
+		end
+
+		if(notblocked(grid, left))
+			push!(parent_pos, (pos,Drift[LEFT]*grid[left[1]][left[2]], pos,Drift[LEFT], left))
+		else
+			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], pos,Drift[LEFT], left))
+		end
+
+		if(notblocked(grid, right))
+			push!(parent_pos, (pos,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT],right))
+		else
+			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], pos,Drift[RIGHT], right))
+>>>>>>> db24e77da5eedf6c6fb15ca05c97c9c7ffb32379
 		end
 	end
 	if(dir==WEST)
@@ -240,3 +262,37 @@ print_grid(b)
 # print_grid(tmp4)
 # println("\nFiltering after Evidence [1, 1, 0, 1]")
 # print_grid(tmp5)
+# print_grid(tmp); println()
+# print_grid(tmp2); println()
+# print_grid(tmp); println()
+# print_grid(tmp); println()
+# print_grid(tmp); println()
+# print_grid(tmp); println()
+Bgrid = [
+	 [1.0, 1.0, 1.0, 1.0, 1.0]
+	,[1.0, 1.0, 1.0, 1.0, 1.0]
+	,[1.0, 1.0, 1.0, 1.0, 1.0]
+	,[1.0, 1.0, 1.0, 1.0, 1.0]
+	,[1.0, 1.0, 1.0, 1.0, 1.0]
+	,[1.0, 1.0, 1.0, 1.0, 1.0]
+
+	]
+
+# println(tmp2[6][1])
+# println(smooth(tmp5,tmp,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH))
+#
+#
+#
+println("Initial Location Probabilities")
+print_grid(grid)
+println("\nFiltering after Evidence [0, 0, 0, 0]")
+print_grid(tmp)
+println("\nPrediction after Action W")
+print_grid(tmp2)
+println("\nFiltering after Evidence [1, 1, 0, 1]")
+print_grid(tmp3)
+println("\nPrediction after Action N")
+print_grid(tmp4)
+println("\nFiltering after Evidence [1, 1, 0, 1]")
+print_grid(tmp5)
+>>>>>>> db24e77da5eedf6c6fb15ca05c97c9c7ffb32379
