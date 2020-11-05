@@ -92,7 +92,7 @@ function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, Squ
 	total_sum = sum(sum(tmp_grid))
 	tmp_grid/ total_sum
 end
-function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getbehind::Bool=true)
+function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getbehind::Bool=false)
 	arr = []
 	function _gen_parts(straightDir::Direction , leftDir::Direction, rightDir::Direction, behindDir::Direction, grid::Array{Array{Float64,1},1}, pos::Tuple{Int64,Int64} )
 		parent_pos = []
@@ -103,12 +103,12 @@ function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, d
 		# println(left, right, straight, behind)
 
 
-		if( notblocked(grid, behind) && getbehind) # Prob of square behind current ot move to current
-			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT], behind))
+		if( notblocked(grid, behind) ) # Prob of square behind current ot move to current
+			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT]))
 		end
 		if( !notblocked(grid, straight)) # Bounce
 			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT] ))
-		else( notblocked(grid, straight) && getbehind)
+		elseif( notblocked(grid, straight) && getbehind)
 			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], straight,Drift[STRAIGHT] ))
 
 		end
@@ -162,7 +162,7 @@ function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float
 		tmp_pos = i[1]
 		prob = i[2]
 		drift = i[4]
-		println(tmp_pos, "\t", cep(grid, tmp_pos, evidence),"*	", prob, "*\t", Bgrid[tmp_pos[1]][tmp_pos[2]],"*	", drift, "\t", last_grid[pos[1]][pos[2]])
+		# println(tmp_pos, "\t", cep(grid, tmp_pos, evidence),"*	", prob, "*\t", Bgrid[tmp_pos[1]][tmp_pos[2]],"*	", drift, "\t", last_grid[pos[1]][pos[2]])
 		y=cep(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* i[4]
 		x+=y
 	end
@@ -208,28 +208,28 @@ Bgrid = [
 # println(tmp2[6][1])
 # smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
 # smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
-# (a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-# (a2,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+(a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+(a2,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
 
 #
 
 
- println("Initial Location Probabilities")
- print_grid(grid)
- println("\nFiltering after Evidence [0, 0, 0, 0]")
- print_grid(tmp)
- println("\nPrediction after Action W")
- print_grid(tmp2)
- println("\nFiltering after Evidence [1, 1, 0, 1]")
- print_grid(tmp3)
- println("\nPrediction after Action N")
- print_grid(tmp4)
- println("\nFiltering after Evidence [1, 1, 0, 1]")
- print_grid(tmp5)
- println("\nSmoothing last location [1, 1, 0, 1]")
-# print_grid(a)
-# println("\nSmoothing last 2nd location [1, 1, 0, 1]")
-# print_grid(a2)
-print(
-      smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
-     )
+println("Initial Location Probabilities")
+print_grid(grid)
+println("\nFiltering after Evidence [0, 0, 0, 0]")
+print_grid(tmp)
+println("\nPrediction after Action W")
+print_grid(tmp2)
+println("\nFiltering after Evidence [1, 1, 0, 1]")
+print_grid(tmp3)
+println("\nPrediction after Action N")
+print_grid(tmp4)
+println("\nFiltering after Evidence [1, 1, 0, 1]")
+print_grid(tmp5)
+println("\nSmoothing last location [1, 1, 0, 1]")
+print_grid(a)
+println("\nSmoothing last 2nd location [1, 1, 0, 1]")
+print_grid(a2)
+# print(
+#       smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
+#      )
