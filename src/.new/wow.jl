@@ -162,15 +162,8 @@ function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float
 		tmp_pos = i[1]
 		prob = i[2]
 		drift = i[4]
-		# println(cep(grid,tmp_pos, evidence), "\t", last_grid[pos[1]][pos[2]], "\t", Bgrid[tmp_pos[1]][tmp_pos[2]], "\t", drift)
-		# println(cep(grid,pos, evidence), "\t", last_grid[pos[1]][pos[2]], "\t", Bgrid[pos[1]][pos[2]], "\t", drift)
-
-		# println(i[1], "\t", cep(grid, i[1], evidence ), "\t", last_grid[i[1][1]][i[1][2]], Bgrid[i[1][1]][i[1][2]], i[2])
-		# println(cep(grid, tmp_pos, evidence),"\t*", Bgrid[tmp_pos[1]][tmp_pos[2]],"\t*", i[4])
+		println(tmp_pos, "\t", cep(grid, tmp_pos, evidence),"*	", prob, "*\t", Bgrid[tmp_pos[1]][tmp_pos[2]],"*	", drift, "\t", last_grid[pos[1]][pos[2]])
 		y=cep(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* i[4]
-		# println(y, "=\t", cep(grid, tmp_pos, evidence), "*\t","*\t", Bgrid[tmp_pos[1]][tmp_pos[2]], "*\t", i[4], "------------", i[1])
-		# println(cep(grid,tmp_pos, evidence),'\t', Bgrid[tmp_pos[1]][tmp_pos[2]],'\t', i)
-		# y=cep(grid,tmp_pos, evidence) * last_grid[tmp_pos[1]][tmp_pos[2]] *  Bgrid[tmp_pos[1]][tmp_pos[2]] 
 		x+=y
 	end
 	(x, x *last_grid[pos[1]][pos[2]])
@@ -215,28 +208,28 @@ Bgrid = [
 # println(tmp2[6][1])
 # smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
 # smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
-(a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-print_grid(a)
-println()
-print_grid(b)
-(a,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-println()
-print_grid(a)
-println()
-print_grid(b)
+# (a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+# (a2,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
 
 #
 
-#
-# println("Initial Location Probabilities")
-# print_grid(grid)
-# println("\nFiltering after Evidence [0, 0, 0, 0]")
-# print_grid(tmp)
-# println("\nPrediction after Action W")
-# print_grid(tmp2)
-# println("\nFiltering after Evidence [1, 1, 0, 1]")
-# print_grid(tmp3)
-# println("\nPrediction after Action N")
-# print_grid(tmp4)
-# println("\nFiltering after Evidence [1, 1, 0, 1]")
-# print_grid(tmp5)
+
+ println("Initial Location Probabilities")
+ print_grid(grid)
+ println("\nFiltering after Evidence [0, 0, 0, 0]")
+ print_grid(tmp)
+ println("\nPrediction after Action W")
+ print_grid(tmp2)
+ println("\nFiltering after Evidence [1, 1, 0, 1]")
+ print_grid(tmp3)
+ println("\nPrediction after Action N")
+ print_grid(tmp4)
+ println("\nFiltering after Evidence [1, 1, 0, 1]")
+ print_grid(tmp5)
+ println("\nSmoothing last location [1, 1, 0, 1]")
+# print_grid(a)
+# println("\nSmoothing last 2nd location [1, 1, 0, 1]")
+# print_grid(a2)
+print(
+      smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
+     )
