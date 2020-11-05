@@ -219,7 +219,11 @@ Bgrid = [
 print_grid(a)
 println()
 print_grid(b)
-(a,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+(a,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+println()
+print_grid(a)
+println()
+print_grid(b)
 
 #
 
