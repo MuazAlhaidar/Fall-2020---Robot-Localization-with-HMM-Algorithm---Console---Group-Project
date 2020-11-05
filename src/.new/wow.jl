@@ -26,9 +26,9 @@ function print_grid(grid::Array{Array{Float64,1},1})
 	for i = 1:HEIGHT
 		for j = 1:WIDTH
 			if(!notblocked(grid, (i,j)))
-				print("###","\t\t")
+				print("####","\t")
 			else
-				print(i,":",j," ", round(grid[i][j]*100, sigdigits=4), "\t")
+				print(round(grid[i][j]*100, digits=2), "\t")
 		   	end
 		end
 		println()
@@ -203,4 +203,19 @@ Bgrid = [
 	]
 
 # println(tmp2[6][1])
-println(smooth(tmp5,tmp,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH))
+# println(smooth(tmp5,tmp,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH))
+#
+#
+#
+println("Initial Location Probabilities")
+print_grid(grid)
+println("\nFiltering after Evidence [0, 0, 0, 0]")
+print_grid(tmp)
+println("\nPrediction after Action W")
+print_grid(tmp2)
+println("\nFiltering after Evidence [1, 1, 0, 1]")
+print_grid(tmp3)
+println("\nPrediction after Action N")
+print_grid(tmp4)
+println("\nFiltering after Evidence [1, 1, 0, 1]")
+print_grid(tmp5)
