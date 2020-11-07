@@ -7,9 +7,6 @@ grid = [
 	,[1/24, 1/24, 1/24, 1/24, 1/24]
 
 	]
-function reload()
-	include("wow.jl")
-end
 const HEIGHT=6
 const WIDTH=5
 # const OPEN=0
@@ -35,9 +32,8 @@ function print_grid(grid::Array{Array{Float64,1},1})
 	end
 end
 
-# function ep(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64})
-# end
 
+# Check if the posistion is blocked (either out of boudns/obstacles) or a free space
 function notblocked(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64})
 	if( (pos[1]>0 && pos[1]<=HEIGHT) && (pos[2]>0 && pos[2]<=WIDTH) )
 		return (grid[pos[1]][pos[2]] != 0.0)
@@ -45,6 +41,7 @@ function notblocked(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64})
 	return false
 end
 
+# Given direction adn posistions return psostion that is pos+direction
 function move(pos::Tuple{Int64, Int64}, dir::Direction)
 	if(dir==WEST)
 		return (pos[1], pos[2]-1)
@@ -58,10 +55,10 @@ function move(pos::Tuple{Int64, Int64}, dir::Direction)
 	if(dir==SOUTH)
 		return (pos[1]+1, pos[2])
 	end
-	
 end
 
-function cep(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
+# Given posistion and evidecne return probabilty of being in that posistion
+function evidence_Probabilty(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
 	prod = 1
 	for i in 1:4
 		tmp_pos = move(pos,AllDirects[i])
@@ -73,21 +70,21 @@ function cep(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, evidence
 		end
 	end
 	prod 
-
 end
 
+# Get the evidecne contional probabilty of each posistoin*Pos(s_i)
+# Then divide each posistion with the evidnece conditonal probabilty
 function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
 	tmp_grid = deepcopy(grid)
 	for row in 1:6
 		for col in 1:5
 			if(notblocked(grid, (row,col)))
-				tmp_grid[row][col]*=cep(grid, (row, col), evidence)
+				tmp_grid[row][col]*=evidence_Probabilty(grid, (row, col), evidence)
 			end
-
 		end
 	end
 	total_sum = sum(sum(tmp_grid))
-	tmp_grid/ total_sum
+	tmp_grid / total_sum
 end
 
 function otherTP( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getbehind::Bool=true)
@@ -205,7 +202,7 @@ function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float
 		tmp_pos = i[1]
 		prob = i[2]
 		drift = i[4]
-		y=cep(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* drift
+		y=evidence_Probabilty(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* drift
 		x+=y
 	end
 	
