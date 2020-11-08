@@ -97,21 +97,16 @@ function otherTP( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir
 		right = move(pos, rightDir)
 
 
-		if( notblocked(grid, behind) && getbehind) # Prob of square behind current ot move to current
-			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT], behind))
-		end
 		if( !notblocked(grid, straight)) # Bounce
 			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT] ))
-		else( notblocked(grid, straight) && getbehind)
+		else
 			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], straight,Drift[STRAIGHT] ))
 		end
-
 		if(notblocked(grid, left))
 			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], pos,Drift[LEFT] ))
 		else
 			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], pos,Drift[LEFT] ))
 		end
-
 		if(notblocked(grid, right))
 			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT]))
 		else
@@ -134,8 +129,9 @@ function otherTP( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir
 end
 
 
-function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction)
+function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getforward=false) # => array of  (pos::Tuple{Int64, Int64}, Drift[Direction] * P(s), Drift[Direction])
 	arr = []
+
 	function _gen_parts(straightDir::Direction , leftDir::Direction, rightDir::Direction, behindDir::Direction, grid::Array{Array{Float64,1},1}, pos::Tuple{Int64,Int64} )
 		parent_pos = []
 		behind = move(pos, behindDir)
@@ -144,25 +140,26 @@ function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, d
 		right = move(pos, rightDir)
 
 
-		if( notblocked(grid, behind)) # Prob of square behind current ot move to current
-			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT], behind))
-		end
 		if( !notblocked(grid, straight)) # Bounce
-			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT], straight))
+			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT] ))
+		elseif (getforward)
+			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], straight,Drift[STRAIGHT] ))
 		end
-
+		if( notblocked(grid, behind) && !getforward) # Prob of square behind current ot move to current
+			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT]))
+		end
 		if(notblocked(grid, left))
-			push!(parent_pos, (pos,Drift[LEFT]*grid[left[1]][left[2]], pos,Drift[LEFT], left))
+			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], pos,Drift[LEFT] ))
 		else
-			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], pos,Drift[LEFT], left))
+			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], pos,Drift[LEFT] ))
 		end
-
 		if(notblocked(grid, right))
-			push!(parent_pos, (pos,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT],right))
+			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT]))
 		else
-			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], pos,Drift[RIGHT], right))
+			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], pos,Drift[RIGHT]))
 		end
 	end
+
 	if(dir==WEST)
 		arr=_gen_parts(WEST, SOUTH, NORTH, EAST, grid, pos)
 	end
@@ -196,7 +193,8 @@ function predict(grid::Array{Array{Float64,1}}, dir::Direction)
 end
 
 function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction, pos::Tuple{Int64, Int64})
-	parent_pos=otherTP(grid, pos, dir, false )
+	# parent_pos=otherTP(grid, pos, dir, false )
+	parent_pos=transprob(grid, pos, dir, true )
 	x=0
 	for i in parent_pos
 		tmp_pos = i[1]
