@@ -129,6 +129,9 @@ function otherTP( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir
 end
 
 
+# Gets the transitional probabilty of posistions going into a point,
+# or transitional probablites from the point
+# the first is used for prediction, the other for smoothing
 function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getforward=false) # => array of  (pos::Tuple{Int64, Int64}, Drift[Direction] * P(s), Drift[Direction])
 	arr = []
 
@@ -141,22 +144,22 @@ function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, d
 
 
 		if( !notblocked(grid, straight)) # Bounce
-			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT] ))
-		elseif (getforward)
-			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], straight,Drift[STRAIGHT] ))
+			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], Drift[STRAIGHT] ))
+		elseif (getforward) # If this is smoothing, want the probabilty in front
+			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], Drift[STRAIGHT] ))
 		end
 		if( notblocked(grid, behind) && !getforward) # Prob of square behind current ot move to current
-			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], behind,Drift[STRAIGHT]))
+			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], Drift[STRAIGHT]))
 		end
-		if(notblocked(grid, left))
-			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], pos,Drift[LEFT] ))
-		else
-			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], pos,Drift[LEFT] ))
+		if(notblocked(grid, left)) # Get probabitly of the left pos coming to curretn
+			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], Drift[LEFT] ))
+		else #Boucne from left
+			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], Drift[LEFT] ))
 		end
-		if(notblocked(grid, right))
-			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT]))
-		else
-			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], pos,Drift[RIGHT]))
+		if(notblocked(grid, right)) #Get probabilty of right pos coming to current
+			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]],Drift[RIGHT]))
+		else #Bounce
+			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], Drift[RIGHT]))
 		end
 	end
 
@@ -178,6 +181,8 @@ end
 
 
 
+# Prediction is the sum of possiple transitional probabilties
+# that can reach pos_i, * P(pos).j
 function predict(grid::Array{Array{Float64,1}}, dir::Direction)
 	tmp_grid = deepcopy(grid)
 	for row in 1:6
@@ -192,14 +197,17 @@ function predict(grid::Array{Array{Float64,1}}, dir::Direction)
 
 end
 
-function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction, pos::Tuple{Int64, Int64})
-	# parent_pos=otherTP(grid, pos, dir, false )
+# Get the transitional probabilty of a point going OUT, not in
+# an it's conditional probabilty, with it's inital probabilty
+# returns 2 things: B at pos, and B*p(s)
+function smoothpart( last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction, pos::Tuple{Int64, Int64})
 	parent_pos=transprob(grid, pos, dir, true )
 	x=0
-	for i in parent_pos
-		tmp_pos = i[1]
-		prob = i[2]
-		drift = i[4]
+	# for i in parent_pos
+	for (tmp_pos, prob, drift) in parent_pos
+		# tmp_pos = i[1]
+		# prob = i[2]
+		# drift = i[3]
 		y=evidence_Probabilty(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* drift
 		x+=y
 	end
@@ -207,13 +215,15 @@ function smoothpart( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float
 	(x,   x *last_grid[pos[1]][pos[2]])
 end
 
+# Get the smoothing part for each posistion in grid
+# Then divide the whoel grid by the sum of it's parts
 function smooth( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction)
 	SP = deepcopy(grid)
 	B = deepcopy(Bgrid)
 	for row in 1:6
 		for col in 1:5
 			if(notblocked(grid, (row,col)))
-				val=smoothpart(grid, last_grid, Bgrid, evidence, dir, (row,col))
+				val=smoothpart(last_grid, Bgrid, evidence, dir, (row,col))
 				B[row][col] = val[1]
 				SP[row][col] = val[2]
 			else
