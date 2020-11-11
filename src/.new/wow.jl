@@ -84,6 +84,7 @@ function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, Squ
 		end
 	end
 	total_sum = sum(sum(tmp_grid))
+	println("SUM: ", total_sum)
 	tmp_grid / total_sum
 end
 
@@ -232,6 +233,7 @@ function smooth( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1
 			end
 		end
 	end
+	println("SUM: ", sum(sum(SP)))
 	SP/=sum(sum(SP))
 	(SP, B)
 end
@@ -255,7 +257,7 @@ Bgrid = [
 # print_grid(tmp5)
 
 (tmp6,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-(tmp7,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
+(tmp7,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),WEST)
 
 println("Initial Location Probabilities")
 print_grid(grid)
@@ -269,7 +271,7 @@ println("\nPrediction after Action N")
 print_grid(tmp4)
 println("\nFiltering after Evidence [1, 1, 0, 1]")
 print_grid(tmp5)
-println("\nLast position Smoothing with Evidence [1, 1, 0, 1]")
+println("\nLast position Smoothing with Evidence [1, 1, 0, 1] and north")
 print_grid(tmp6)
-println("\nSecond Last posistion smoothing with Evidence [1, 1, 0, 1]")
+println("\nSecond Last posistion smoothing with Evidence [1, 1, 0, 1] And west")
 print_grid(tmp7)
