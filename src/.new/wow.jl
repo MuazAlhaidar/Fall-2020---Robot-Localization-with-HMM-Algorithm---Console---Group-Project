@@ -84,52 +84,9 @@ function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, Squ
 		end
 	end
 	total_sum = sum(sum(tmp_grid))
-	println("SUM: ", total_sum)
+	# println("SUM: ", total_sum)
 	tmp_grid / total_sum
 end
-
-function otherTP( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getbehind::Bool=true)
-	arr = []
-	function _gen_parts(straightDir::Direction , leftDir::Direction, rightDir::Direction, behindDir::Direction, grid::Array{Array{Float64,1},1}, pos::Tuple{Int64,Int64} )
-		parent_pos = []
-		behind = move(pos, behindDir)
-		straight = move(pos, straightDir)
-		left = move(pos, leftDir)
-		right = move(pos, rightDir)
-
-
-		if( !notblocked(grid, straight)) # Bounce
-			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], pos,Drift[STRAIGHT] ))
-		else
-			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], straight,Drift[STRAIGHT] ))
-		end
-		if(notblocked(grid, left))
-			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], pos,Drift[LEFT] ))
-		else
-			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], pos,Drift[LEFT] ))
-		end
-		if(notblocked(grid, right))
-			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]], pos,Drift[RIGHT]))
-		else
-			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], pos,Drift[RIGHT] ))
-		end
-	end
-	if(dir==WEST)
-		arr=_gen_parts(WEST, SOUTH, NORTH, EAST, grid, pos)
-	end
-	if(dir==NORTH)
-		arr=_gen_parts(NORTH, EAST, WEST, SOUTH, grid, pos)
-	end
-	if(dir==SOUTH)
-		arr=_gen_parts(SOUTH, EAST, WEST, NORTH, grid, pos)
-	end
-	if(dir==EAST)
-		arr=_gen_parts(EAST, SOUTH, NORTH, WEST, grid, pos)
-	end
-	arr
-end
-
-
 # Gets the transitional probabilty of posistions going into a point,
 # or transitional probablites from the point
 # the first is used for prediction, the other for smoothing
@@ -189,6 +146,9 @@ function predict(grid::Array{Array{Float64,1}}, dir::Direction)
 	for row in 1:6
 		for col in 1:5
 			if(notblocked(grid, (row,col)))
+				x= transprob(grid, (row, col), dir)
+				println("Transphob", [y[3]*grid[y[1][1]][y[1][2]]-y[2] for y in x], )
+				# println("Transphob",x[2],grid[x[1][1]][x[1][2]]   )
 				val=sum([x[2] for x in transprob(grid, (row, col), dir)])
 				tmp_grid[row][col]=val
 			end
@@ -233,8 +193,9 @@ function smooth( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1
 			end
 		end
 	end
-	println("SUM: ", sum(sum(SP)))
+	# println("SUM: ", sum(sum(SP)))
 	SP/=sum(sum(SP))
+	# print_grid(SP); println(); print_grid(B); println()
 	(SP, B)
 end
 tmp=filter(grid, (OPEN, OPEN, OPEN, OPEN))
