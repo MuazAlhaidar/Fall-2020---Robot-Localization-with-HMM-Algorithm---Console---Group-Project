@@ -1,124 +1,125 @@
 #+TITLE: Program 2
 #+AUTHOR: Muaz Alhaider and Zakariya Ahmed
+#+OPTIONS: num:nil toc:nil
 
 * Modules
    
-** Transitional Probabilty
+** Transitional Probability
    \begin{math}
-    Transitional\ Probabilty(Pos_i, Dir) = \\
+    Transitional\ Probability(Pos_i, Dir) = \\
      (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})
 \end{math}
     
-\newline 
+\newline
 \begin{math}
 \\ \\
-Transitional\ Probabilty(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})
+Transitional\ Probability(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})
 \\ \\
 \end{math}
     
 
-    /Left/, /Right/, and /Straight/ are all positions defiend in relation to what /Dir/ is: if /Dir/ is EAST, then /Left/ is SOUTH, /Right/ is NORTH, and Straight is EAST.
-  
-   Here, transitional probabilty has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possiple paths to a point, which is why we include $Pos_{from\ behind}$. Smoothing however, does not require that, which is why it's not include.
+    /Left/, /Right/, and /Straight/ are all positions defined in relation to what /Dir/ is: if /Dir/ is EAST, then /Left/ is SOUTH, /Right/ is NORTH, and Straight is EAST.
+ 
+   Here, transitional probability has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possible paths to a point, which is why we include $Pos_{from\ behind}$. Smoothing however, does not require that, which is why it's not included.
    
    
 ** Prediction
-    $$Prediction(Grid, Direction) = \left\{pos_i \in Grid | \sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
+    $$Prediction(Grid, Direction) = \left\{pos_i \in Grid \mid \sum^{Transition\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
     
-    $Prediction(Grid, Direction)$ (as the name implies) attempts to predict where the agent will be given previous infroamtion. It does this by transforming the grid by the equation  $\sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)$.This gets the probabilty of an agent drifting (or if direction is straight, accurantly going to) a point, and what is the probabtily the agent would be at the point $Pos_j$.
+    $Prediction(Grid, Direction)$ (as the name implies) attempts to predict where the agent will be given previous information. It does this by transforming the grid by the expression  $\sum^{Transition\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)$.This gets the probability of an agent drifting (or if direction is straight, accurately going to) a point, and what is the probability the agent would be at the point $Pos_j$.
     
     
-** Evidence Contional Probabilty
+** Evidence Conditional Probability
    \begin{math}
-  Evidence\ Contional\ Probability(Pos_i, Evidence)= \\
+  Evidence\ Conditional\ Probability(Pos_i, Evidence)= \\
   \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])
 \end{math}
    
-This is the equation we use to get the evidence contional probability: it's the product of each the evidecne's value at a direction times what's actaully in the value of the direction. So if /Left/ has open, but evidecne says it's closed, it's 0.2. Taking the prodcut of all direction's sensed value and actual value, it will result in the Evidecne Contional Probabilty at $Pos_i$ given $Evidence$
+This is the equation we use to get the evidence conditional probability: it's the product of each the evidecne's value at a direction times what's actually in the value of the direction. So if /Left/ has opened, but evidence says it's closed, it's 0.2. Taking the product of all direction's sensed value and actual value, it will result in the Evidence Conditional Probability at $Pos_i$ given $Evidence$
 
 ** Filtering
 
  
    \begin{math}
-Filtering(Grid, Evidence) = \{pos_i \in Grid |\\
-\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) } \}
+Filtering(Grid, Evidence) = \{pos_i \in Grid \mid\\
+\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidence) }{\sum^{all\ positions}_{pos} P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, evidence) } \}
 \end{math}
 
 \\
    
-   Filtering is a transformation upon the grid: each value gets transformed by the expression $\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) }$, whcih for purposes of making it easier to talk about, will be expressed as $Filter\ Step(pos_i, Evidence)$. $Filter\ Step$ is condtional probabilty of each point times what the point was previously, and then dividng it  by the sum of all points on the grid. This operatoin is $O(n)$, although more accuratly it's $O(2n)$ because there's a minimal of iterating through each value twice.
+   Filtering is a transformation upon the grid: each value gets transformed by the expression $\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidence) }{\sum^{all\ positions}_{pos} P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, evidence) }$, which for purposes of making it easier to talk about, will be expressed as $Filter\ Step(pos_i, Evidence)$. $Filter\ Step$ is conditional probability of each point times what the point was previously, and then dividing it  by the sum of all points on the grid. This operation is $O(n)$, although more accurately it's $O(2n)$ because there's a minimum of iterating through each value twice.
    
 * Results   
   The code outputs the following:
-  #+begin_src sh :results output
+  #+begin_src sh :results output :exports both
   julia SUBMIT.jl
   #+end_src
 
   #+RESULTS:
   #+begin_example
   Initial Location Probabilities
-  4.17	4.17	4.17	4.17	4.17	
-  4.17	####	####	4.17	4.17	
-  4.17	####	4.17	4.17	4.17	
-  4.17	####	####	4.17	4.17	
-  4.17	####	4.17	4.17	4.17	
-  4.17	4.17	4.17	4.17	4.17	
+  4.17    4.17    4.17    4.17    4.17    
+  4.17    ####    ####    4.17    4.17    
+  4.17    ####    4.17    4.17    4.17    
+  4.17    ####    ####    4.17    4.17    
+  4.17    ####    4.17    4.17    4.17    
+  4.17    4.17    4.17    4.17    4.17    
 
   Filtering after Evidence [0, 0, 0, 0]
-  1.62	1.62	1.62	5.2	1.62	
-  1.62	####	####	5.2	5.2	
-  1.62	####	0.51	16.63	5.2	
-  1.62	####	####	5.2	5.2	
-  1.62	####	1.62	16.63	5.2	
-  1.62	1.62	5.2	5.2	1.62	
+  1.62    1.62    1.62    5.2    1.62    
+  1.62    ####    ####    5.2    5.2    
+  1.62    ####    0.51    16.63    5.2    
+  1.62    ####    ####    5.2    5.2    
+  1.62    ####    1.62    16.63    5.2    
+  1.62    1.62    5.2    5.2    1.62    
 
   Prediction after Action W
-  2.76	1.62	4.12	2.7	1.02	
-  1.62	####	####	10.55	1.02	
-  1.62	####	12.15	5.2	1.56	
-  1.62	####	####	12.26	1.56	
-  1.62	####	13.8	5.2	1.02	
-  2.76	4.12	4.66	4.41	1.02	
+  2.76    1.62    4.12    2.7    1.02    
+  1.62    ####    ####    10.55    1.02    
+  1.62    ####    12.15    5.2    1.56    
+  1.62    ####    ####    12.26    1.56    
+  1.62    ####    13.8    5.2    1.02    
+  2.76    4.12    4.66    4.41    1.02    
 
   Filtering after Evidence [1, 1, 0, 1]
-  3.23	1.9	4.82	0.84	0.1	
-  0.16	####	####	3.29	0.03	
-  0.16	####	53.26	0.43	0.04	
-  0.16	####	####	3.82	0.04	
-  0.16	####	16.13	0.43	0.03	
-  3.23	4.82	1.45	1.38	0.1	
+  3.23    1.9    4.82    0.84    0.1    
+  0.16    ####    ####    3.29    0.03    
+  0.16    ####    53.26    0.43    0.04    
+  0.16    ####    ####    3.82    0.04    
+  0.16    ####    16.13    0.43    0.03    
+  3.23    4.82    1.45    1.38    0.1    
 
   Prediction after Action N
-  3.14	2.54	3.79	3.63	0.23	
-  0.16	####	####	0.8	0.53	
-  0.16	####	45.33	10.67	0.1	
-  0.16	####	####	0.88	0.6	
-  2.31	####	14.8	3.39	0.14	
-  1.21	4.08	0.93	0.23	0.22	
+  3.14    2.54    3.79    3.63    0.23    
+  0.16    ####    ####    0.8    0.53    
+  0.16    ####    45.33    10.67    0.1    
+  0.16    ####    ####    0.88    0.6    
+  2.31    ####    14.8    3.39    0.14    
+  1.21    4.08    0.93    0.23    0.22    
 
   Filtering after Evidence [1, 1, 0, 1]
-  1.55	1.25	1.87	0.48	0.01	
-  0.01	####	####	0.11	0.01	
-  0.01	####	83.92	0.37	0.0	
-  0.01	####	####	0.12	0.01	
-  0.09	####	7.3	0.12	0.0	
-  0.6	2.01	0.12	0.03	0.01	
+  1.55    1.25    1.87    0.48    0.01    
+  0.01    ####    ####    0.11    0.01    
+  0.01    ####    83.92    0.37    0.0    
+  0.01    ####    ####    0.12    0.01    
+  0.09    ####    7.3    0.12    0.0    
+  0.6    2.01    0.12    0.03    0.01    
 
   Last position Smoothing with Evidence [1, 1, 0, 1] and north
-  1.59	0.94	2.12	0.14	0.01	
-  0.06	####	####	0.37	0.0	
-  0.01	####	84.08	0.16	0.0	
-  0.01	####	####	0.18	0.0	
-  0.01	####	6.85	0.07	0.0	
-  0.57	2.12	0.64	0.07	0.0	
+  1.59    0.94    2.12    0.14    0.01    
+  0.06    ####    ####    0.37    0.0    
+  0.01    ####    84.08    0.16    0.0    
+  0.01    ####    ####    0.18    0.0    
+  0.01    ####    6.85    0.07    0.0    
+  0.57    2.12    0.64    0.07    0.0    
 
-  Second Last posistion smoothing with Evidence [1, 1, 0, 1] And west
-  0.81	0.94	0.91	1.94	0.06	
-  0.18	####	####	0.19	0.13	
-  0.01	####	3.51	80.69	0.11	
-  0.01	####	####	0.09	0.05	
-  0.06	####	0.72	5.86	0.05	
-  0.29	0.49	2.36	0.52	0.02	
+  Second Last position smoothing with Evidence [1, 1, 0, 1] And west
+  0.81    0.94    0.91    1.94    0.06    
+  0.18    ####    ####    0.19    0.13    
+  0.01    ####    3.51    80.69    0.11    
+  0.01    ####    ####    0.09    0.05    
+  0.06    ####    0.72    5.86    0.05    
+  0.29    0.49    2.36    0.52    0.02    
   #+end_example
 
 * Screenshots
@@ -127,5 +128,7 @@ Filtering(Grid, Evidence) = \{pos_i \in Grid |\\
   :END:
 [[file:data/a9/3abd3f-f652-4b14-a3ef-d46d087ebe0c/screenshot-20201111-135323.png]]
 [[file:data/a9/3abd3f-f652-4b14-a3ef-d46d087ebe0c/screenshot-20201111-135329.png]]
+
+
 
 

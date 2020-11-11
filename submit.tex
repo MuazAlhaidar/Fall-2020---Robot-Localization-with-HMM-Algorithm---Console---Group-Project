@@ -1,4 +1,4 @@
-% Created 2020-11-11 Wed 16:04
+% Created 2020-11-11 Wed 16:11
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -27,63 +27,61 @@
 \begin{document}
 
 \maketitle
-\tableofcontents
 
+\section*{Modules}
+\label{sec:org14bc464}
 
-\section{Modules}
-\label{sec:org337da2e}
-
-\subsection{Transitional Probabilty}
-\label{sec:org561e420}
+\subsection*{Transitional Probability}
+\label{sec:orgfa5aaa4}
    \begin{math}
-    Transitional\ Probabilty(Pos_i, Dir) = \\
+    Transitional\ Probability(Pos_i, Dir) = \\
      (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})
 \end{math}
 
-\newline 
+\newline
 \begin{math}
 \\ \\
-Transitional\ Probabilty(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})
+Transitional\ Probability(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})
 \\ \\
 \end{math}
 
 
-\emph{Left}, \emph{Right}, and \emph{Straight} are all positions defiend in relation to what \emph{Dir} is: if \emph{Dir} is EAST, then \emph{Left} is SOUTH, \emph{Right} is NORTH, and Straight is EAST.
+\emph{Left}, \emph{Right}, and \emph{Straight} are all positions defined in relation to what \emph{Dir} is: if \emph{Dir} is EAST, then \emph{Left} is SOUTH, \emph{Right} is NORTH, and Straight is EAST.
 
-Here, transitional probabilty has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possiple paths to a point, which is why we include \(Pos_{from\ behind}\). Smoothing however, does not require that, which is why it's not include.
-
-
-\subsection{Prediction}
-\label{sec:orga352dc6}
-$$Prediction(Grid, Direction) = \left\{pos_i \in Grid \mid \sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
-
-\(Prediction(Grid, Direction)\) (as the name implies) attempts to predict where the agent will be given previous infroamtion. It does this by transforming the grid by the expression  \(\sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)\).This gets the probabilty of an agent drifting (or if direction is straight, accurantly going to) a point, and what is the probabtily the agent would be at the point \(Pos_j\).
+Here, transitional probability has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possible paths to a point, which is why we include \(Pos_{from\ behind}\). Smoothing however, does not require that, which is why it's not included.
 
 
-\subsection{Evidence Contional Probabilty}
-\label{sec:org7a00100}
+\subsection*{Prediction}
+\label{sec:org6bf8055}
+$$Prediction(Grid, Direction) = \left\{pos_i \in Grid \mid \sum^{Transition\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
+
+\(Prediction(Grid, Direction)\) (as the name implies) attempts to predict where the agent will be given previous information. It does this by transforming the grid by the expression  \(\sum^{Transition\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)\).This gets the probability of an agent drifting (or if direction is straight, accurately going to) a point, and what is the probability the agent would be at the point \(Pos_j\).
+
+
+\subsection*{Evidence Conditional Probability}
+\label{sec:org8a85bb2}
    \begin{math}
-  Evidence\ Contional\ Probability(Pos_i, Evidence)= \\
+  Evidence\ Conditional\ Probability(Pos_i, Evidence)= \\
   \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])
 \end{math}
 
-This is the equation we use to get the evidence contional probability: it's the product of each the evidecne's value at a direction times what's actaully in the value of the direction. So if \emph{Left} has open, but evidecne says it's closed, it's 0.2. Taking the prodcut of all direction's sensed value and actual value, it will result in the Evidecne Contional Probabilty at \(Pos_i\) given \(Evidence\)
+This is the equation we use to get the evidence conditional probability: it's the product of each the evidecne's value at a direction times what's actually in the value of the direction. So if \emph{Left} has opened, but evidence says it's closed, it's 0.2. Taking the product of all direction's sensed value and actual value, it will result in the Evidence Conditional Probability at \(Pos_i\) given \(Evidence\)
 
-\subsection{Filtering}
-\label{sec:org85a6ac9}
+\subsection*{Filtering}
+\label{sec:orgbf77652}
 
 
    \begin{math}
 Filtering(Grid, Evidence) = \{pos_i \in Grid \mid\\
-\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) } \}
+\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidence) }{\sum^{all\ positions}_{pos} P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, evidence) } \}
 \end{math}
 
 
 
-Filtering is a transformation upon the grid: each value gets transformed by the expression \(\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) }\), whcih for purposes of making it easier to talk about, will be expressed as \(Filter\ Step(pos_i, Evidence)\). \(Filter\ Step\) is condtional probabilty of each point times what the point was previously, and then dividng it  by the sum of all points on the grid. This operatoin is \(O(n)\), although more accuratly it's \(O(2n)\) because there's a minimal of iterating through each value twice.
+Filtering is a transformation upon the grid: each value gets transformed by the expression \(\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidence) }{\sum^{all\ positions}_{pos} P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, evidence) }\), which for purposes of making it easier to talk about, will be expressed as \(Filter\ Step(pos_i, Evidence)\). \(Filter\ Step\) is conditional probability of each point times what the point was previously, and then dividing it  by the sum of all points on the grid. This operation is \(O(n)\), although more accurately it's \(O(2n)\) because there's a minimum of iterating through each value twice.
 
-\section{Results}
-\label{sec:org9770f52}
+\section*{Results}
+\label{sec:orga276bb0}
 The code outputs the following:
 \begin{verbatim}
 julia SUBMIT.jl
@@ -155,8 +153,8 @@ Second Last posistion smoothing with Evidence [1, 1, 0, 1] And west
 0.29	0.49	2.36	0.52	0.02	
 \end{verbatim}
 
-\section{Screenshots}
-\label{sec:orga3cb35b}
+\section*{Screenshots}
+\label{sec:org8b0b18f}
 \begin{center}
 \includegraphics[width=.9\linewidth]{data/a9/3abd3f-f652-4b14-a3ef-d46d087ebe0c/screenshot-20201111-135323.png}
 \end{center}
