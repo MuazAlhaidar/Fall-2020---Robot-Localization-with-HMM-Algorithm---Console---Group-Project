@@ -21,203 +21,33 @@ Transitional\ Probabilty(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{fro
   
    Here, transitional probabilty has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possiple paths to a point, which is why we include $Pos_{from\ behind}$. Smoothing however, does not require that, which is why it's not include.
    
-   #+begin_src julia
-  @enum SquareType OPEN CLOSED
-@enum Direction WEST NORTH EAST SOUTH
-@enum DriftType STRAIGHT LEFT RIGHT
-const Drift=Dict(STRAIGHT=>.7, LEFT=>.15, RIGHT=>.15)
-const AllDirects =(WEST, NORTH, EAST, SOUTH)
- 
-   # Gets the transitional probabilty of posistions going into a point,
-# or transitional probablites from the point
-# the first is used for prediction, the other for smoothing
-function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getforward=false) # => array of  (pos::Tuple{Int64, Int64}, Drift[Direction] * P(s), Drift[Direction])
-	arr = []
-
-	function _gen_parts(straightDir::Direction , leftDir::Direction, rightDir::Direction, behindDir::Direction, grid::Array{Array{Float64,1},1}, pos::Tuple{Int64,Int64} )
-		parent_pos = []
-		behind = move(pos, behindDir)
-		straight = move(pos, straightDir)
-		left = move(pos, leftDir)
-		right = move(pos, rightDir)
-
-
-		if( !notblocked(grid, straight)) # Bounce
-			push!(parent_pos, (pos,Drift[STRAIGHT]*grid[pos[1]][pos[2]], Drift[STRAIGHT] ))
-		elseif (getforward) # If this is smoothing, want the probabilty in front
-			push!(parent_pos, (straight,Drift[STRAIGHT]*grid[straight[1]][straight[2]], Drift[STRAIGHT] ))
-		end
-		if( notblocked(grid, behind) && !getforward) # Prob of square behind current ot move to current
-			push!(parent_pos, (behind,Drift[STRAIGHT]*grid[behind[1]][behind[2]], Drift[STRAIGHT]))
-		end
-		if(notblocked(grid, left)) # Get probabitly of the left pos coming to curretn
-			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], Drift[LEFT] ))
-		else #Boucne from left
-			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], Drift[LEFT] ))
-		end
-		if(notblocked(grid, right)) #Get probabilty of right pos coming to current
-			push!(parent_pos, (right,Drift[RIGHT]*grid[right[1]][right[2]],Drift[RIGHT]))
-		else #Bounce
-			push!(parent_pos, (pos,Drift[RIGHT]*grid[pos[1]][pos[2]], Drift[RIGHT]))
-		end
-	end
-
-	if(dir==WEST)
-		arr=_gen_parts(WEST, SOUTH, NORTH, EAST, grid, pos)
-	end
-	if(dir==NORTH)
-		arr=_gen_parts(NORTH, EAST, WEST, SOUTH, grid, pos)
-	end
-	if(dir==SOUTH)
-		arr=_gen_parts(SOUTH, EAST, WEST, NORTH, grid, pos)
-	end
-	if(dir==EAST)
-		arr=_gen_parts(EAST, SOUTH, NORTH, WEST, grid, pos)
-	end
-	arr
-end
-
-   #+end_src
    
 ** Prediction
     $$Prediction(Grid, Direction) = \left\{pos_i \in Grid | \sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
     
     $Prediction(Grid, Direction)$ (as the name implies) attempts to predict where the agent will be given previous infroamtion. It does this by transforming the grid by the equation  $\sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)$.This gets the probabilty of an agent drifting (or if direction is straight, accurantly going to) a point, and what is the probabtily the agent would be at the point $Pos_j$.
     
-    #+begin_src julia
-    # Prediction is the sum of possiple transitional probabilties
-# that can reach pos_i, * P(pos).j
-function predict(grid::Array{Array{Float64,1}}, dir::Direction)
-	tmp_grid = deepcopy(grid)
-	for row in 1:6
-		for col in 1:5
-			if(notblocked(grid, (row,col)))
-				val=sum([x[2] for x in transprob(grid, (row, col), dir)])
-				tmp_grid[row][col]=val
-			end
-		end
-	end
-	tmp_grid
-
-end
-
-    #+end_src
     
 ** Evidence Contional Probabilty
-   #+begin_center
-  $Evidence\ Contional\ Probability(Pos_i, Evidence) =  \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])$
-   #+end_center
+   \begin{math}
+  Evidence\ Contional\ Probability(Pos_i, Evidence)= \\
+  \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])
+\end{math}
    
 This is the equation we use to get the evidence contional probability: it's the product of each the evidecne's value at a direction times what's actaully in the value of the direction. So if /Left/ has open, but evidecne says it's closed, it's 0.2. Taking the prodcut of all direction's sensed value and actual value, it will result in the Evidecne Contional Probabilty at $Pos_i$ given $Evidence$
 
-   #+begin_src julia
-  # Given posistion and evidecne return probabilty of being in that posistion
-const Sense=Dict(OPEN=>Dict(OPEN=>.8, CLOSED=>.2), CLOSED=>Dict(OPEN=>.25, CLOSED=>.75))
- 
-function evidence_Probabilty(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
-	prod = 1
-	for i in 1:4
-		tmp_pos = move(pos,AllDirects[i])
-		block = notblocked(grid, tmp_pos)
-		if (block)
-			prod*= Sense[OPEN][evidence[i]]
-		else
-			prod*= Sense[CLOSED][evidence[i]]
-		end
-	end
-	prod 
-end
-   #+end_src
 ** Filtering
-   #+begin_center
 
- $pos_{s+1,i} = \frac{Evidecne\ Conditional\ Probabtily(pos_{s,i}, evidecne) \cdot P(pos_{s,i}) }{\sum^{all\ posistions}_{pos} Evidecne\ Conditional\ Probabtily(pos_{s,i}, evidecne) \cdot P(pos_{s,i})}$
  
-$Filtering(Grid, Evidence) = \left\{pos_i \in Grid | \frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) } \right\}$
-   #+end_center
+   \begin{math}
+Filtering(Grid, Evidence) = \{pos_i \in Grid |\\
+\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) } \}
+\end{math}
+
+\\
    
    Filtering is a transformation upon the grid: each value gets transformed by the expression $\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidecne) }{\sum^{all\ posistions}_{pos} P(pos_i) \cdot Evidecne\ Conditional\ Probabtily(pos_i, evidecne) }$, whcih for purposes of making it easier to talk about, will be expressed as $Filter\ Step(pos_i, Evidence)$. $Filter\ Step$ is condtional probabilty of each point times what the point was previously, and then dividng it  by the sum of all points on the grid. This operatoin is $O(n)$, although more accuratly it's $O(2n)$ because there's a minimal of iterating through each value twice.
    
-   #+begin_src julia
-   # Get the evidecne contional probabilty of each posistoin*Pos(s_i)
-# Then divide each posistion with the evidnece conditonal probabilty
-function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
-	tmp_grid = deepcopy(grid)
-	for row in 1:6
-		for col in 1:5
-			if(notblocked(grid, (row,col)))
-				tmp_grid[row][col]*=evidence_Probabilty(grid, (row, col), evidence)
-			end
-		end
-	end
-	total_sum = sum(sum(tmp_grid))
-	# println("SUM: ", total_sum)
-	tmp_grid / total_sum
-end
-   #+end_src
-** Smoothing
-    
-    
- \begin{math}
-SmoothingPart(Grid,Previous,Direction,Evidence)= \\ \\
-\{pos_{i} \in Grid|P(Pos_{i} )\cdot \sum ^{Transiton\ Probability(pos_{i} ,direction)}_{(Pos_{j} ,DriftProb)}\\ \\
-P(Pos_{j} )\cdot DriftProb\cdot Evidence\ Conditional\ Probabtily(Grid,Pos_{j} ,Evidence)\}\\ \\
-\end{math}
-
-
-
-    \begin{math}
-    Smoothing(Grid, Previous, Direction,Evidence) = \\
-  \left\{pos_i \in Grid | \frac{SmoothPart(Grid, Previous,Direction, Evidence)}{\sum^{\text{All Positons}}_{pos} Smoothpart(Grid, Prevoius, Direction,Evidence)}  \right \}
-\end{math}
-
-   
-
-Smoothing invovles
-   
-   #+begin_src julia
-   # Get the transitional probabilty of a point going OUT, not in
-# an it's conditional probabilty, with it's inital probabilty
-# returns 2 things: B at pos, and B*p(s)
-function smoothpart( last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction, pos::Tuple{Int64, Int64})
-	parent_pos=transprob(grid, pos, dir, true )
-	x=0
-	# for i in parent_pos
-	for (tmp_pos, prob, drift) in parent_pos
-		# tmp_pos = i[1]
-		# prob = i[2]
-		# drift = i[3]
-		y=evidence_Probabilty(grid, tmp_pos, evidence)* Bgrid[tmp_pos[1]][tmp_pos[2]]* drift
-		x+=y
-	end
-	
-	(x,   x *last_grid[pos[1]][pos[2]])
-end
-
-# Get the smoothing part for each posistion in grid
-# Then divide the whoel grid by the sum of it's parts
-function smooth( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction)
-	SP = deepcopy(grid)
-	B = deepcopy(Bgrid)
-	for row in 1:6
-		for col in 1:5
-			if(notblocked(grid, (row,col)))
-				val=smoothpart(last_grid, Bgrid, evidence, dir, (row,col))
-				B[row][col] = val[1]
-				SP[row][col] = val[2]
-			else
-				B[row][col]  = 0
-				SP[row][col] = 0
-			end
-		end
-	end
-	# println("SUM: ", sum(sum(SP)))
-	SP/=sum(sum(SP))
-	# print_grid(SP); println(); print_grid(B); println()
-	(SP, B)
-end
-
-   #+end_src
 * Results   
   The code outputs the following:
   #+begin_src sh :results output
