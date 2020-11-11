@@ -1,4 +1,4 @@
-% Created 2020-11-11 Wed 15:49
+% Created 2020-11-11 Wed 15:53
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -31,18 +31,24 @@
 
 
 \section{Modules}
-\label{sec:org368f7fe}
+\label{sec:org66fd117}
 
 \subsection{Transitional Probabilty}
-\label{sec:org375c0f6}
-\begin{center}
-$$Transitional\ Probabilty(Pos_i, Dir) = (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})$$
+\label{sec:org324d76c}
+   \begin{math}
+    Transitional\ Probabilty(Pos_i, Dir) = \\
+     (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})
+\end{math}
 
-$$Transitional\ Probabilty(Pos_i, Dir) = (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})$$
+\newline 
+\begin{math}
+\\ \\
+Transitional\ Probabilty(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})
+\\ \\
+\end{math}
 
 
 \emph{Left}, \emph{Right}, and \emph{Straight} are all positions defiend in relation to what \emph{Dir} is: if \emph{Dir} is EAST, then \emph{Left} is SOUTH, \emph{Right} is NORTH, and Straight is EAST.
-\end{center}
 
 Here, transitional probabilty has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possiple paths to a point, which is why we include \(Pos_{from\ behind}\). Smoothing however, does not require that, which is why it's not include.
 
@@ -105,7 +111,7 @@ end
 \end{verbatim}
 
 \subsection{Prediction}
-\label{sec:org07a2d75}
+\label{sec:orgbe8b4f7}
 $$Prediction(Grid, Direction) = \left\{pos_i \in Grid | \sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
 
 \(Prediction(Grid, Direction)\) (as the name implies) attempts to predict where the agent will be given previous infroamtion. It does this by transforming the grid by the equation  \(\sum^{Transiton\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)\).This gets the probabilty of an agent drifting (or if direction is straight, accurantly going to) a point, and what is the probabtily the agent would be at the point \(Pos_j\).
@@ -130,7 +136,7 @@ end
 \end{verbatim}
 
 \subsection{Evidence Contional Probabilty}
-\label{sec:org447ad11}
+\label{sec:org701dd3a}
 \begin{center}
 \(Evidence\ Contional\ Probability(Pos_i, Evidence) =  \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])\)
 \end{center}
@@ -156,7 +162,7 @@ function evidence_Probabilty(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, 
 end
 \end{verbatim}
 \subsection{Filtering}
-\label{sec:org750ac2c}
+\label{sec:org9cf60f3}
 \begin{center}
 
 
@@ -185,7 +191,7 @@ function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, Squ
 end
 \end{verbatim}
 \subsection{Smoothing}
-\label{sec:org966655b}
+\label{sec:org8e7ca7e}
 
 
  \begin{math}
@@ -249,14 +255,14 @@ end
 
 \end{verbatim}
 \section{Results}
-\label{sec:org736d6d5}
+\label{sec:org5b2a986}
 The code outputs the following:
 \begin{verbatim}
 julia SUBMIT.jl
 \end{verbatim}
 
 \section{Screenshots}
-\label{sec:org901cd2c}
+\label{sec:orgcf51d23}
 \begin{center}
 \includegraphics[width=.9\linewidth]{data/a9/3abd3f-f652-4b14-a3ef-d46d087ebe0c/screenshot-20201111-135323.png}
 \end{center}

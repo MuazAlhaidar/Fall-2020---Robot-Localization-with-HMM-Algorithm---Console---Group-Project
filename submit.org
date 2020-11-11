@@ -4,14 +4,20 @@
 * Modules
    
 ** Transitional Probabilty
-   #+begin_center
-    $$Transitional\ Probabilty(Pos_i, Dir) = (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})$$
+   \begin{math}
+    Transitional\ Probabilty(Pos_i, Dir) = \\
+     (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})
+\end{math}
     
-    $$Transitional\ Probabilty(Pos_i, Dir) = (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})$$
+\newline 
+\begin{math}
+\\ \\
+Transitional\ Probabilty(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right), Pos_{from\ behind}:Drift(Straight)): (\text{For prediction})
+\\ \\
+\end{math}
     
 
     /Left/, /Right/, and /Straight/ are all positions defiend in relation to what /Dir/ is: if /Dir/ is EAST, then /Left/ is SOUTH, /Right/ is NORTH, and Straight is EAST.
-   #+end_center
   
    Here, transitional probabilty has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possiple paths to a point, which is why we include $Pos_{from\ behind}$. Smoothing however, does not require that, which is why it's not include.
    
