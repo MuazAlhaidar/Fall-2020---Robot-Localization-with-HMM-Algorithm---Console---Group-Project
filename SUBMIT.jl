@@ -7,19 +7,22 @@ grid = [
 	,[1/24, 1/24, 1/24, 1/24, 1/24]
 
 	]
+	
 const HEIGHT=6
 const WIDTH=5
-# const OPEN=0
-# const CLOSED=1
+
 @enum SquareType OPEN CLOSED
 @enum Direction WEST NORTH EAST SOUTH
 @enum DriftType STRAIGHT LEFT RIGHT
+
 const Drift=Dict(STRAIGHT=>.7, LEFT=>.15, RIGHT=>.15)
 const AllDirects =(WEST, NORTH, EAST, SOUTH)
+
 # Actual => Evidence
 const Sense=Dict(OPEN=>Dict(OPEN=>.8, CLOSED=>.2), CLOSED=>Dict(OPEN=>.25, CLOSED=>.75))
 
 function print_grid(grid::Array{Array{Float64,1},1})
+	
 	for i = 1:HEIGHT
 		for j = 1:WIDTH
 			if(!notblocked(grid, (i,j)))
@@ -35,31 +38,41 @@ end
 
 # Check if the posistion is blocked (either out of boudns/obstacles) or a free space
 function notblocked(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64})
+	
 	if( (pos[1]>0 && pos[1]<=HEIGHT) && (pos[2]>0 && pos[2]<=WIDTH) )
 		return (grid[pos[1]][pos[2]] != 0.0)
 	end
+	
 	return false
 end
 
 # Given direction adn posistions return psostion that is pos+direction
 function move(pos::Tuple{Int64, Int64}, dir::Direction)
+	
 	if(dir==WEST)
 		return (pos[1], pos[2]-1)
 	end
+	
 	if(dir==NORTH)
 		return (pos[1]-1, pos[2])
 	end
+	
 	if(dir==EAST)
 		return (pos[1], pos[2]+1)
 	end
+	
 	if(dir==SOUTH)
 		return (pos[1]+1, pos[2])
 	end
 end
 
 # Given posistion and evidecne return probabilty of being in that posistion
-function evidence_Probabilty(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
+function evidence_Probabilty(grid::Array{Array{Float64,1},1}, 
+							pos::Tuple{Int64, Int64}, 
+							evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
+							
 	prod = 1
+	
 	for i in 1:4
 		tmp_pos = move(pos,AllDirects[i])
 		block = notblocked(grid, tmp_pos)
@@ -69,13 +82,16 @@ function evidence_Probabilty(grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, 
 			prod*= Sense[CLOSED][evidence[i]]
 		end
 	end
+	
 	prod 
 end
 
 # Get the evidecne contional probabilty of each posistoin*Pos(s_i)
 # Then divide each posistion with the evidnece conditonal probabilty
 function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, SquareType, SquareType, SquareType})
+	
 	tmp_grid = deepcopy(grid)
+	
 	for row in 1:6
 		for col in 1:5
 			if(notblocked(grid, (row,col)))
@@ -83,18 +99,28 @@ function filter(grid::Array{Array{Float64,1},1}, evidence::Tuple{SquareType, Squ
 			end
 		end
 	end
+	
 	total_sum = sum(sum(tmp_grid))
-	# println("SUM: ", total_sum)
+	
 	tmp_grid / total_sum
 end
+
 # Gets the transitional probabilty of posistions going into a point,
 # or transitional probablites from the point
 # the first is used for prediction, the other for smoothing
 function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, dir::Direction, getforward=false) # => array of  (pos::Tuple{Int64, Int64}, Drift[Direction] * P(s), Drift[Direction])
+	
 	arr = []
 
-	function _gen_parts(straightDir::Direction , leftDir::Direction, rightDir::Direction, behindDir::Direction, grid::Array{Array{Float64,1},1}, pos::Tuple{Int64,Int64} )
+	function _gen_parts(straightDir::Direction , 
+						leftDir::Direction, 
+						rightDir::Direction, 
+						behindDir::Direction, 
+						grid::Array{Array{Float64,1},1}, 
+						pos::Tuple{Int64,Int64} )
+		
 		parent_pos = []
+		
 		behind = move(pos, behindDir)
 		straight = move(pos, straightDir)
 		left = move(pos, leftDir)
@@ -111,7 +137,7 @@ function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, d
 		end
 		if(notblocked(grid, left)) # Get probabitly of the left pos coming to curretn
 			push!(parent_pos, (left,Drift[LEFT]*grid[left[1]][left[2]], Drift[LEFT] ))
-		else #Boucne from left
+		else #Bounce from left
 			push!(parent_pos, (pos,Drift[LEFT]*grid[pos[1]][pos[2]], Drift[LEFT] ))
 		end
 		if(notblocked(grid, right)) #Get probabilty of right pos coming to current
@@ -133,6 +159,7 @@ function transprob( grid::Array{Array{Float64,1},1}, pos::Tuple{Int64, Int64}, d
 	if(dir==EAST)
 		arr=_gen_parts(EAST, SOUTH, NORTH, WEST, grid, pos)
 	end
+	
 	arr
 end
 
@@ -142,27 +169,33 @@ end
 # Prediction is the sum of possiple transitional probabilties
 # that can reach pos_i, * P(pos).j
 function predict(grid::Array{Array{Float64,1}}, dir::Direction)
+	
 	tmp_grid = deepcopy(grid)
+	
 	for row in 1:6
 		for col in 1:5
 			if(notblocked(grid, (row,col)))
 				x= transprob(grid, (row, col), dir)
-				# println("Transphob",x[2],grid[x[1][1]][x[1][2]]   )
 				val=sum([x[2] for x in transprob(grid, (row, col), dir)])
 				tmp_grid[row][col]=val
 			end
 		end
 	end
+	
 	tmp_grid
-
 end
 
 # Get the transitional probabilty of a point going OUT, not in
 # an it's conditional probabilty, with it's inital probabilty
 # returns 2 things: B at pos, and B*p(s)
-function smoothpart( last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction, pos::Tuple{Int64, Int64})
-	parent_pos=transprob(grid, pos, dir, true )
+function smoothpart( last_grid::Array{Array{Float64,1}}, 
+					Bgrid::Array{Array{Float64,1}},  
+					evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  
+					dir::Direction, pos::Tuple{Int64, Int64})
+					
+	parent_pos=transprob(grid, pos, dir, true)
 	x=0
+	
 	# for i in parent_pos
 	for (tmp_pos, prob, drift) in parent_pos
 		# tmp_pos = i[1]
@@ -172,14 +205,20 @@ function smoothpart( last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Floa
 		x+=y
 	end
 	
-	(x,   x *last_grid[pos[1]][pos[2]])
+	(x, x * last_grid[pos[1]][pos[2]])
 end
 
 # Get the smoothing part for each posistion in grid
 # Then divide the whoel grid by the sum of it's parts
-function smooth( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1}}, Bgrid::Array{Array{Float64,1}},  evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  dir::Direction)
+function smooth( grid::Array{Array{Float64,1}}, 
+				last_grid::Array{Array{Float64,1}}, 
+				Bgrid::Array{Array{Float64,1}},  
+				evidence::Tuple{SquareType, SquareType, SquareType, SquareType},  
+				dir::Direction)
+				
 	SP = deepcopy(grid)
 	B = deepcopy(Bgrid)
+	
 	for row in 1:6
 		for col in 1:5
 			if(notblocked(grid, (row,col)))
@@ -192,16 +231,18 @@ function smooth( grid::Array{Array{Float64,1}}, last_grid::Array{Array{Float64,1
 			end
 		end
 	end
-	# println("SUM: ", sum(sum(SP)))
+	
 	SP/=sum(sum(SP))
-	# print_grid(SP); println(); print_grid(B); println()
+	
 	(SP, B)
 end
-tmp=filter(grid, (OPEN, OPEN, OPEN, OPEN))
-tmp2=predict(tmp, WEST)
-tmp3=filter(tmp2, (CLOSED, CLOSED, OPEN, CLOSED))
-tmp4=predict(tmp3, NORTH)
-tmp5= filter(tmp4, (CLOSED, CLOSED, OPEN, CLOSED))
+
+tmp  = filter(grid, (OPEN, OPEN, OPEN, OPEN))
+tmp2 = predict(tmp, WEST)
+tmp3 = filter(tmp2, (CLOSED, CLOSED, OPEN, CLOSED))
+tmp4 = predict(tmp3, NORTH)
+tmp5 = filter(tmp4, (CLOSED, CLOSED, OPEN, CLOSED))
+
 Bgrid = [
 	 [1.0, 1.0, 1.0, 1.0, 1.0]
 	 ,[1.0, 1.0, 1.0, 1.0, 1.0]
@@ -211,10 +252,6 @@ Bgrid = [
 	 ,[1.0, 1.0, 1.0, 1.0, 1.0]
 
 	 ]
-
-# smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
-# smoothpart(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH, (1,3))
-# print_grid(tmp5)
 
 (tmp6,b)=smooth(tmp5,tmp3,Bgrid,(CLOSED,CLOSED,OPEN,CLOSED),NORTH)
 (tmp7,c)=smooth(tmp5,tmp,b,(CLOSED,CLOSED,OPEN,CLOSED),WEST)
