@@ -97,7 +97,6 @@ end
 
     #+end_src
     
-    
 ** Evidence Contional Probabilty
    #+begin_center
   $Evidence\ Contional\ Probability(Pos_i, Evidence) =  \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])$
