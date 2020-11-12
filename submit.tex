@@ -1,4 +1,4 @@
-% Created 2020-11-11 Wed 16:19
+% Created 2020-11-11 Wed 19:10
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -29,10 +29,10 @@
 \maketitle
 
 \section*{Modules}
-\label{sec:org615d8b7}
+\label{sec:orgee52053}
 
 \subsection*{Transitional Probability}
-\label{sec:org4f6c62e}
+\label{sec:org5525885}
    \begin{math}
     Transitional\ Probability(Pos_i, Dir) = \\
      (Pos_{from\ left}:Drift(Left), Pos_{from\ straight}:Drift(Straight), Pos_{from\ right}:Drift(Right)): (\text{For smoothing})
@@ -46,29 +46,29 @@ Transitional\ Probability(Pos_i, Dir) =\\ (Pos_{from\ left}:Drift(Left), Pos_{fr
 \end{math}
 
 
-\emph{Left}, \emph{Right}, and \emph{Straight} are all positions defined in relation to what \emph{Dir} is: if \emph{Dir} is EAST, then \emph{Left} is SOUTH, \emph{Right} is NORTH, and Straight is EAST.
+\emph{Left}, \emph{Right}, and \emph{Straight} are all positions defined in relation to what \emph{Dir} is: if \emph{Dir} is EAST, then \emph{Left} is SOUTH, \emph{Right} is NORTH, and Straight is EAST for example.
 
-Here, transitional probability has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possible paths to a point, which is why we include \(Pos_{from\ behind}\). Smoothing however, does not require that, which is why it's not included.
+Here, transitional probability has two forms: one which is all paths that converge to a point, and another where they diverge from a point. Prediction (as the name implies) wants all the possible paths to a point, which is why we include \(Pos_{from\ behind}\). Smoothing however, does not use that, which is why it's not included.
 
 
 \subsection*{Prediction}
-\label{sec:org0947aab}
-$$Prediction(Grid, Direction) = \left\{pos_i \in Grid \mid \sum^{Transition\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j) \right \}$$
+\label{sec:org18b630d}
+$$Prediction(Grid, Direction) = \left\{pos_i \in Grid \mid \sum_{(Pos_j, DriftProb)}^{Transition\ Probability(pos_i, direction)} DriftProb \cdot P(Pos_j) \right \}$$
 
 \(Prediction(Grid, Direction)\) (as the name implies) attempts to predict where the agent will be given previous information. It does this by transforming the grid by the expression  \(\sum^{Transition\ Probability(pos_i, direction)}_{(Pos_j, DriftProb)} DriftProb \cdot P(Pos_j)\).This gets the probability of an agent drifting (or if direction is straight, accurately going to) a point, and what is the probability the agent would be at the point \(Pos_j\).
 
 
 \subsection*{Evidence Conditional Probability}
-\label{sec:orgf51bda8}
+\label{sec:orga842a8d}
    \begin{math}
   Evidence\ Conditional\ Probability(Pos_i, Evidence)= \\
   \prod^{\text{Directions} }_{dir=W} Sense(evidence[pos_i dir], actual[pos_i+dir])
 \end{math}
 
-This is the equation we use to get the evidence conditional probability: it's the product of each the evidecne's value at a direction times what's actually in the value of the direction. So if \emph{Left} has opened, but evidence says it's closed, it's 0.2. Taking the product of all direction's sensed value and actual value, it will result in the Evidence Conditional Probability at \(Pos_i\) given \(Evidence\)
+This is the expression we use to get the evidence conditional probability: it's the product of each the evidecne's value at a direction times what's actually in the value of the direction. So if \emph{Left} has opened, but evidence says it's closed, it's 0.2. Taking the product of all direction's sensed value and actual value, it will result in the Evidence Conditional Probability at \(Pos_i\) given \(Evidence\)
 
 \subsection*{Filtering}
-\label{sec:orga1fe660}
+\label{sec:orgce0b42a}
 
 
    \begin{math}
@@ -78,10 +78,10 @@ Filtering(Grid, Evidence) = \{pos_i \in Grid \mid\\
 
 
 
-Filtering is a transformation upon the grid: each value gets transformed by the expression \(\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidence) }{\sum^{all\ positions}_{pos} P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, evidence) }\), which for purposes of making it easier to talk about, will be expressed as \(Filter\ Step(pos_i, Evidence)\). \(Filter\ Step\) is conditional probability of each point times what the point was previously, and then dividing it  by the sum of all points on the grid. This operation is \(O(n)\), although more accurately it's \(O(2n)\) because there's a minimum of iterating through each value twice.
+Filtering is a transformation upon the grid: each value gets transformed by the expression \(\frac{P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, Evidence) }{\sum^{all\ positions}_{pos} P(pos_i) \cdot Evidence\ Conditional\ Probability(pos_i, evidence) }\), which for purposes of making it easier to talk about, will be expressed as \(Filter\ Step(pos_i, Evidence)\). \(Filter\ Step\) is conditional probability of each point times what probabilty of the  point previously, and then dividing it  by the sum of all points on the grid. 
 
 \section*{Results}
-\label{sec:org371832b}
+\label{sec:org60f92e9}
 The code outputs the following:
 \begin{verbatim}
 julia SUBMIT.jl
@@ -154,7 +154,7 @@ Second Last posistion smoothing with Evidence [1, 1, 0, 1] And west
 \end{verbatim}
 
 \section*{Screenshots}
-\label{sec:org0dbc598}
+\label{sec:org500ba87}
 \begin{center}
 \includegraphics[width=.9\linewidth]{data/a9/3abd3f-f652-4b14-a3ef-d46d087ebe0c/screenshot-20201111-135323.png}
 \end{center}
@@ -163,15 +163,15 @@ Second Last posistion smoothing with Evidence [1, 1, 0, 1] And west
 \end{center}
 
 \section*{Who did what}
-\label{sec:orgec9bcae}
+\label{sec:orgd09173e}
 \subsection*{Zakariya}
-\label{sec:orge438cd5}
+\label{sec:org61b47c8}
 \begin{itemize}
-\item Transitional probability/prediction
+\item Transitional probability/prediction algorithm, code and report.
 \end{itemize}
 \subsection*{Muaz}
-\label{sec:org694c30e}
+\label{sec:orga79b48d}
 \begin{itemize}
-\item Conditional Evidence probability, filtering and smoothing.
+\item Conditional Evidence probability, filtering and smoothing algorithm and code.
 \end{itemize}
 \end{document}
